@@ -21,7 +21,7 @@
 
 ```powershell
 # 克隆仓库
-git clone https://github.com/IcedDog/curriculum.git
+git clone https://github.com/Yizhe-Gan/2025-final.git
 cd curriculum
 
 # 获取并 bootstrap vcpkg（若已安装，请跳过）
@@ -43,3 +43,4 @@ cmake --build build --config Debug
 ## 其他说明
 
 大量导入数据时，`utils/` 中的 Python 脚本提供了批量插入示例。
+
