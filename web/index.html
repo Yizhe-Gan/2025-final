@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程管理系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>课程管理系统</h1>
+            <nav>
+                <button class="nav-btn active" data-view="students">学生</button>
+                <button class="nav-btn" data-view="courses">课程</button>
+                <button class="nav-btn" data-view="enrollments">选课</button>
+                <button class="nav-btn" data-view="student-courses">学生选课查询</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Students View -->
+            <section id="students-view" class="view-section active">
+                <div class="view-header">
+                    <h2>学生</h2>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="showAddStudentModal()">＋ 添加学生</button>
+                        <button class="btn btn-secondary" onclick="showImportModal('students')">导入CSV</button>
+                        <button class="btn btn-danger" onclick="deleteAllStudents()">全部删除</button>
+                        <input type="text" id="student-search" placeholder="搜索学生..." onkeyup="searchStudents()">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="students-table">
+                        <thead>
+                            <tr>
+                                <th>学号</th>
+                                <th>姓名</th>
+                                <th>邮箱</th>
+                                <th>学分</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-tbody">
+                            <tr><td colspan="6" class="loading">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button class="btn btn-secondary" onclick="prevPage('students')">上一页</button>
+                    <span id="students-page-info"></span>
+                    <button class="btn btn-secondary" onclick="nextPage('students')">下一页</button>
+                </div>
+            </section>
+
+            <!-- Courses View -->
+            <section id="courses-view" class="view-section">
+                <div class="view-header">
+                    <h2>课程</h2>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="showAddCourseModal()">＋ 添加课程</button>
+                        <button class="btn btn-secondary" onclick="showImportModal('courses')">导入CSV</button>
+                        <button class="btn btn-danger" onclick="deleteAllCourses()">全部删除</button>
+                        <input type="text" id="course-search" placeholder="搜索课程..." onkeyup="searchCourses()">
+                    </div>
+                </div>
+                <div class="filters">
+                    <select id="course-type-filter" onchange="filterCourses()">
+                        <option value="">所有类型</option>
+                        <option value="required">必修</option>
+                        <option value="elective">选修</option>
+                        <option value="general">通识</option>
+                    </select>
+                    <select id="course-semester-filter" onchange="filterCourses()">
+                        <option value="">所有学期</option>
+                        <option value="fall">秋季</option>
+                        <option value="spring">春季</option>
+                        <option value="summer">夏季</option>
+                    </select>
+                </div>
+                <div class="table-container">
+                    <table id="courses-table">
+                        <thead>
+                            <tr>
+                                <th>课程编号</th>
+                                <th>课程名称</th>
+                                <th>类型</th>
+                                <th>学分</th>
+                                <th>总学时</th>
+                                <th>讲课学时</th>
+                                <th>实验学时</th>
+                                <th>学期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="courses-tbody">
+                            <tr><td colspan="10" class="loading">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button class="btn btn-secondary" onclick="prevPage('courses')">上一页</button>
+                    <span id="courses-page-info"></span>
+                    <button class="btn btn-secondary" onclick="nextPage('courses')">下一页</button>
+                </div>
+            </section>
+
+            <!-- Enrollments View -->
+            <section id="enrollments-view" class="view-section">
+                <div class="view-header">
+                    <h2>选课管理</h2>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="showAddEnrollmentModal()">＋ 添加选课</button>
+                        <button class="btn btn-secondary" onclick="showImportModal('enrollments')">导入CSV</button>
+                        <button class="btn btn-danger" onclick="deleteAllEnrollments()">全部删除</button>
+                    </div>
+                </div>
+                <div class="filters">
+                    <input type="text" id="enrollment-student-filter" placeholder="按学号筛选" onkeyup="filterEnrollments()">
+                    <input type="text" id="enrollment-course-filter" placeholder="按课程编号筛选" onkeyup="filterEnrollments()">
+                </div>
+                <div class="table-container">
+                    <table id="enrollments-table">
+                        <thead>
+                            <tr>
+                                <th>学号</th>
+                                <th>学生姓名</th>
+                                <th>课程编号</th>
+                                <th>课程名称</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="enrollments-tbody">
+                            <tr><td colspan="6" class="loading">加载中...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <button class="btn btn-secondary" onclick="prevPage('enrollments')">上一页</button>
+                    <span id="enrollments-page-info"></span>
+                    <button class="btn btn-secondary" onclick="nextPage('enrollments')">下一页</button>
+                </div>
+            </section>
+
+            <!-- Student Courses View -->
+            <section id="student-courses-view" class="view-section">
+                <div class="view-header">
+                    <h2>学生选课查询</h2>
+                    <div class="actions">
+                        <input type="text" id="student-courses-search" placeholder="输入学号查询...">
+                        <button class="btn btn-primary" onclick="searchStudentCourses()">查询</button>
+                    </div>
+                </div>
+                <div id="student-courses-result" class="student-courses-result">
+                    <p class="info-text">请输入学号查询该学生的选课情况</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="add-student-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加学生</h3>
+                <button class="close" onclick="closeModal('add-student-modal')">&times;</button>
+            </div>
+            <form id="add-student-form" onsubmit="addStudent(event)">
+                <div class="form-group">
+                    <label for="student-id">学号 *</label>
+                    <input type="text" id="student-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="student-name">姓名</label>
+                    <input type="text" id="student-name">
+                </div>
+                <div class="form-group">
+                    <label for="student-email">邮箱</label>
+                    <input type="email" id="student-email">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-student-modal')">取消</button>
+                    <button type="submit" class="btn btn-primary">添加学生</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div id="edit-student-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑学生</h3>
+                <button class="close" onclick="closeModal('edit-student-modal')">&times;</button>
+            </div>
+            <form id="edit-student-form" onsubmit="editStudent(event)">
+                <input type="hidden" id="edit-student-id-hidden">
+                <div class="form-group">
+                    <label for="edit-student-id">学号</label>
+                    <input type="text" id="edit-student-id" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="edit-student-name">姓名 *</label>
+                    <input type="text" id="edit-student-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-student-email">邮箱</label>
+                    <input type="email" id="edit-student-email">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('edit-student-modal')">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Course Modal -->
+    <div id="add-course-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加课程</h3>
+                <button class="close" onclick="closeModal('add-course-modal')">&times;</button>
+            </div>
+            <form id="add-course-form" onsubmit="addCourse(event)">
+                <div class="form-group">
+                    <label for="course-id">课程编号 *</label>
+                    <input type="text" id="course-id" required>
+                </div>
+                <div class="form-group">
+                    <label for="course-name">课程名称</label>
+                    <input type="text" id="course-name">
+                </div>
+                <div class="form-group">
+                    <label for="course-type">类型</label>
+                    <select id="course-type">
+                        <option value="">-</option>
+                        <option value="required">必修</option>
+                        <option value="elective">选修</option>
+                        <option value="general">通识</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="course-credit">学分 *</label>
+                    <input type="number" id="course-credit" step="0.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="course-total-hours">总学时</label>
+                    <input type="number" id="course-total-hours" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="course-lecture-hours">讲课学时</label>
+                    <input type="number" id="course-lecture-hours" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="course-lab-hours">实验学时</label>
+                    <input type="number" id="course-lab-hours" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="course-semester">学期</label>
+                    <select id="course-semester">
+                        <option value="">-</option>
+                        <option value="fall">秋季</option>
+                        <option value="spring">春季</option>
+                        <option value="summer">夏季</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-course-modal')">取消</button>
+                    <button type="submit" class="btn btn-primary">添加课程</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Course Modal -->
+    <div id="edit-course-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑课程</h3>
+                <button class="close" onclick="closeModal('edit-course-modal')">&times;</button>
+            </div>
+            <form id="edit-course-form" onsubmit="editCourse(event)">
+                <input type="hidden" id="edit-course-id-hidden">
+                <div class="form-group">
+                    <label for="edit-course-id">课程编号</label>
+                    <input type="text" id="edit-course-id" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-name">课程名称</label>
+                    <input type="text" id="edit-course-name">
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-type">类型</label>
+                    <select id="edit-course-type">
+                        <option value="">-</option>
+                        <option value="required">必修</option>
+                        <option value="elective">选修</option>
+                        <option value="general">通识</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-credit">学分 *</label>
+                    <input type="number" id="edit-course-credit" step="0.5" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-total-hours">总学时</label>
+                    <input type="number" id="edit-course-total-hours" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-lecture-hours">讲课学时</label>
+                    <input type="number" id="edit-course-lecture-hours" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-lab-hours">实验学时</label>
+                    <input type="number" id="edit-course-lab-hours" step="0.5">
+                </div>
+                <div class="form-group">
+                    <label for="edit-course-semester">学期</label>
+                    <select id="edit-course-semester">
+                        <option value="">-</option>
+                        <option value="fall">秋季</option>
+                        <option value="spring">春季</option>
+                        <option value="summer">夏季</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('edit-course-modal')">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Enrollment Modal -->
+    <div id="add-enrollment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加选课</h3>
+                <button class="close" onclick="closeModal('add-enrollment-modal')">&times;</button>
+            </div>
+            <form id="add-enrollment-form" onsubmit="addEnrollment(event)">
+                <div class="form-group">
+                    <label for="enrollment-student-id">学号 *</label>
+                    <input type="text" id="enrollment-student-id" list="students-datalist" required>
+                    <datalist id="students-datalist"></datalist>
+                </div>
+                <div class="form-group">
+                    <label for="enrollment-course-id">课程编号 *</label>
+                    <input type="text" id="enrollment-course-id" list="courses-datalist" required>
+                    <datalist id="courses-datalist"></datalist>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('add-enrollment-modal')">取消</button>
+                    <button type="submit" class="btn btn-primary">添加选课</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Enrollment Modal -->
+    <div id="edit-enrollment-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑选课</h3>
+                <button class="close" onclick="closeModal('edit-enrollment-modal')">&times;</button>
+            </div>
+            <form id="edit-enrollment-form" onsubmit="editEnrollment(event)">
+                <input type="hidden" id="edit-enrollment-old-student">
+                <input type="hidden" id="edit-enrollment-old-course">
+                <div class="form-group">
+                    <label for="edit-enrollment-student-id">学号 *</label>
+                    <input type="text" id="edit-enrollment-student-id" list="students-datalist" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-enrollment-course-id">课程编号 *</label>
+                    <input type="text" id="edit-enrollment-course-id" list="courses-datalist" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('edit-enrollment-modal')">取消</button>
+                    <button type="submit" class="btn btn-primary">保存修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Import CSV Modal -->
+    <div id="import-csv-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>从 CSV 导入</h3>
+                <button class="close" onclick="closeModal('import-csv-modal')">&times;</button>
+            </div>
+            <div class="import-content">
+                <p>选择一个 CSV 文件导入。第一行应该包含列名。</p>
+                <div class="form-group">
+                    <label for="csv-file">CSV 文件</label>
+                    <input type="file" id="csv-file" accept=".csv">
+                </div>
+                <div id="csv-preview" class="csv-preview"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('import-csv-modal')">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="importCSV()">导入</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
